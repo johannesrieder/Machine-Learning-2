@@ -21,10 +21,8 @@
 #-----------------
 # Bitte ausfüllen:
 #-----------------
-# Gruppenname:
-# Gruppenteilnehmer: 
-
-
+# Gruppenname: Obi-Wan
+# Gruppenteilnehmer: Lisa Trovato-Monastra, Johannes Rieder, Jannik Steck, Marius Bauer
 
 #-------------------------
 # notwendinge Bibliotheken
@@ -45,28 +43,36 @@ rows.train <- sample(length(data$medv), 0.8 * length(data$medv))
 train         <- as.data.frame(data[rows.train,])
 test          <- as.data.frame(data[-rows.train,])
 
-# Initialisierung einer Matrizen-Liste für Aufgabe 4
-matrices <- list()
-
 #------------------------------------
 # Aufgabe 2: Lineare Regression
 #------------------------------------
 # Lineare Regression mit Output-Variable Purchase und den anderen Variablen als Input-Variablen
-lm.fit <- lm(formula = medv ~ crim + zn + indus + chas + nox + rm + age + dis + rad + tax + ptratio + b + lstat, 
-             data = train)
+linreg.fit <- lm(formula = medv ~ . , 
+                 data = train)
+linreg.fit
 
-## Vorhersage der Wahrscheinlichkeiten der Testdaten auf Basis der linearen Regression
-lm_predprob <- predict(object  = lm.fit,
+plot(linreg.fit)
+
+# Vorhersage von medv der Testdaten auf Basis der linearen Regression
+linreg.pred <- predict(object  = linreg.fit,
                        newdata = test,
                        type    = "response")
 
-# hier fehlt noch die mittlere quadratische Abweichung
+# Mittlere quadratische Abweichung für train-Datenpunkte
+linreg.train.mqa <- mean(
+  (data$medv - predict(object=linreg.fit, newdata=train))^2)
+
+# Mittlere quadratische Abweichung für test-Datenpunkte
+linreg.test.mqa <- mean(
+  (data$medv - predict(object=linreg.fit, newdata=test))^2)
 
 #------------------------------------
 # Aufgabe 3: Bias-Variance
 #------------------------------------
 
-#    ...Platz für Ihre Begründung...
+# Approved by James Jamal Steck's Geodreieck
+# MQA (Varianz) hoch, Bias hoch, Modell nicht gut gefitted, da zu wenig Datenpunkte 
+# --> Underfitting
 
 #------------------------------------
 # Aufgabe 4: Ridge Regression
@@ -82,6 +88,7 @@ rreg.fit <- glmnet(x = x,
                    alpha = 0, 
                    lambda = lambda)
 
+plot(rreg.fit)
 rreg.fit
 #------------------------------------
 # Aufgabe 5: Lasso Regression
@@ -97,6 +104,7 @@ lasreg.fit <- glmnet(x = x,
                      alpha = 1, 
                      lambda = lambda)
 
+plot(lasreg.fit)
 lasreg.fit
 #------------------------------------
 # Aufgabe 6: Vergleich der Ergebnisse
