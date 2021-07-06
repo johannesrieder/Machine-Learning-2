@@ -87,6 +87,7 @@ ridreg.cv <- cv.glmnet(x = x,
                        lambda = ridreg.lambdas)
 
 ridreg.lambda <- ridreg.cv$lambda.min
+
 ridreg.fit <- ridreg.cv$glmnet.fit
 
 ridreg <- glmnet(x, y, alpha = 0, lambda = ridreg.lambda)
@@ -105,17 +106,17 @@ ridreg.test.mqa <- mean((test$medv - predict(ridreg.fit,newx=newx.test))^2)
 
 lasreg.lambdas <- 10^seq( from = 5, to = -3, length = 100)
 lasreg.cv <- cv.glmnet(x = x, 
-                       y = y,
+                       y = y, 
                        alpha = 1, 
                        lambda = lasreg.lambdas)
 
 lasreg.lambda <- lasreg.cv$lambda.min
-lasreg.lambda
+
 lasreg.fit <- lasreg.cv$glmnet.fit
 
 lasreg <- glmnet(x, y, alpha = 0, lambda = lasreg.lambda)
 
-lasreg.pred <- predict(lasreg, s = lasreg.lambda, newx = newx[,2:14])
+lasreg.pred <- predict(lasreg, s = lasreg.lambda, newx = newx.test)
 
 # Mittlere quadratische Abweichung für train-Datenpunkte
 lasreg.train.mqa <- mean((train$medv - predict(lasreg.fit,newx=newx.train))^2)
