@@ -43,15 +43,19 @@ rows.train <- sample(length(data$medv), 0.8 * length(data$medv))
 train         <- as.data.frame(data[rows.train,])
 test          <- as.data.frame(data[-rows.train,])
 
+y <- data.matrix(data$medv)
+x <- data %>% select(crim, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, b, lstat) %>% data.matrix()
+
+newx.test <- model.matrix(~.-test$medv, 
+                          data=test)[,2:14]
+newx.train <- model.matrix(~.-train$medv, 
+                           data=train)[,2:14]
 #------------------------------------
 # Aufgabe 2: Lineare Regression
 #------------------------------------
 # Lineare Regression mit Output-Variable Purchase und den anderen Variablen als Input-Variablen
 linreg.fit <- lm(formula = medv ~ . , 
                  data = train)
-linreg.fit
-
-plot(linreg.fit)
 
 # Vorhersage von medv der Testdaten auf Basis der linearen Regression
 linreg.pred <- predict(object  = linreg.fit,
@@ -59,12 +63,10 @@ linreg.pred <- predict(object  = linreg.fit,
                        type    = "response")
 
 # Mittlere quadratische Abweichung für train-Datenpunkte
-linreg.train.mqa <- mean(
-  (data$medv - predict(object=linreg.fit, newdata=train))^2)
+linreg.train.mqa <- mean((train$medv - predict(linreg.fit,newdata=train))^2)
 
 # Mittlere quadratische Abweichung für test-Datenpunkte
-linreg.test.mqa <- mean(
-  (data$medv - predict(object=linreg.fit, newdata=test))^2)
+linreg.test.mqa <- mean((test$medv - predict(linreg.fit,newdata=test))^2)
 
 #------------------------------------
 # Aufgabe 3: Bias-Variance
@@ -78,34 +80,49 @@ linreg.test.mqa <- mean(
 # Aufgabe 4: Ridge Regression
 #------------------------------------
 
-y <- data$medv
-x <- data %>% select(crim, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, b, lstat) %>% data.matrix()
+ridreg.lambdas <- 10^seq( from = 5, to = -3, length = 100)
+ridreg.cv <- cv.glmnet(x = x, 
+                       y = y,
+                       alpha = 0, 
+                       lambda = ridreg.lambdas)
 
-lambda <- 10^seq( from = 5, to = -3, length = 100)
+ridreg.lambda <- ridreg.cv$lambda.min
+ridreg.fit <- ridreg.cv$glmnet.fit
 
-rreg.fit <- glmnet(x = x, 
-                   y = y,
-                   alpha = 0, 
-                   lambda = lambda)
+ridreg <- glmnet(x, y, alpha = 0, lambda = ridreg.lambda)
 
-plot(rreg.fit)
-rreg.fit
+ridreg.pred <- predict(ridreg, s = ridreg.lambda, newx = newx.test)
+
+# Mittlere quadratische Abweichung für train-Datenpunkte
+ridreg.train.mqa <- mean((train$medv - predict(ridreg.fit,newx=newx.train))^2)
+
+# Mittlere quadratische Abweichung für test-Datenpunkte
+ridreg.test.mqa <- mean((test$medv - predict(ridreg.fit,newx=newx.test))^2)
+
 #------------------------------------
 # Aufgabe 5: Lasso Regression
 #------------------------------------
 
-y <- data$medv
-x <- data %>% select(crim, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, b, lstat) %>% data.matrix()
+lasreg.lambdas <- 10^seq( from = 5, to = -3, length = 100)
+lasreg.cv <- cv.glmnet(x = x, 
+                       y = y,
+                       alpha = 1, 
+                       lambda = lasreg.lambdas)
 
-lambda <- 10^seq( from = 5, to = -3, length = 100)
+lasreg.lambda <- lasreg.cv$lambda.min
+lasreg.lambda
+lasreg.fit <- lasreg.cv$glmnet.fit
 
-lasreg.fit <- glmnet(x = x, 
-                     y = y,
-                     alpha = 1, 
-                     lambda = lambda)
+lasreg <- glmnet(x, y, alpha = 0, lambda = lasreg.lambda)
 
-plot(lasreg.fit)
-lasreg.fit
+lasreg.pred <- predict(lasreg, s = lasreg.lambda, newx = newx[,2:14])
+
+# Mittlere quadratische Abweichung für train-Datenpunkte
+lasreg.train.mqa <- mean((train$medv - predict(lasreg.fit,newx=newx.train))^2)
+
+# Mittlere quadratische Abweichung für test-Datenpunkte
+lasreg.test.mqa <- mean((test$medv - predict(lasreg.fit,newx=newx.test))^2)
+
 #------------------------------------
 # Aufgabe 6: Vergleich der Ergebnisse
 #------------------------------------
