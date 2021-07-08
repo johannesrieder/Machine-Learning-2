@@ -38,7 +38,7 @@ data("BostonHousing")
 data <- BostonHousing
 
 set.seed(42)
-# Einteilung des Caravan-Datensatzes in 80% Trainings- und 20% Testdaten
+# Einteilung des BostonHousing-Datensatzes in 80% Trainings- und 20% Testdaten
 rows.train <- sample(length(data$medv), 0.8 * length(data$medv))
 train         <- as.data.frame(data[rows.train,])
 test          <- as.data.frame(data[-rows.train,])
@@ -56,7 +56,7 @@ newx.train <- model.matrix(~.-train$medv,
 #------------------------------------
 # Aufgabe 2: Lineare Regression
 #------------------------------------
-# Lineare Regression mit Output-Variable Purchase und den anderen Variablen als Input-Variablen
+# Lineare Regression mit Output-Variable medv und den anderen Variablen als Input-Variablen
 linreg.fit <- lm(formula = medv ~ . , 
                  data = train)
 
@@ -87,6 +87,7 @@ linreg.test.mqa <- mean((test$medv - predict(linreg.fit,newdata=test))^2)
 # Aufgabe 4: Ridge Regression
 #------------------------------------
 
+# Ridge Regression mit alpha = 0
 ridreg.cv <- cv.glmnet(x = x, 
                        y = y,
                        alpha = 0, 
@@ -110,6 +111,7 @@ ridreg.test.mqa <- mean((test$medv - predict(ridreg, newx=newx.test))^2)
 # Aufgabe 5: Lasso Regression
 #------------------------------------
 
+# Lasso Regression mit alpha = 1
 lasreg.cv <- cv.glmnet(x = x, 
                        y = y,
                        alpha = 1, 
@@ -150,7 +152,7 @@ print(paste("Test-Fehler: ", lasreg.test.mqa))
 print("-------------------------------------")
 
 #
-# Vergleicht man die Modelle anhand des berechneten MQAs, wird ersichtlich, 
+# Vergleicht man die Modelle anhand der berechneten MQAs, wird ersichtlich, 
 # dass die lineare Regression die geringste MQA aufweisen kann und somit am
 # besten geeignet ist. Die Modelle der Ridge-Regression und Lasso-Regression
 # liefern höhere MQAs.
@@ -162,21 +164,3 @@ print("-------------------------------------")
 # unserer Ansicht nach underfitted, wodurch die Vorteile der Regularisierung
 # gegen Overfitting nicht greifen.
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
